@@ -1,5 +1,5 @@
 # Mora
-  A heterogeneous simulator for feasible RRAM accelerators.
+  A heterogeneous simulator for availability investigation of RRAM accelerators.
   
   MNSIM forked from https://github.com/Zhu-Zhenhua/MNSIM_Python
   

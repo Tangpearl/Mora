@@ -30,14 +30,17 @@ mora_layer_param_dicts = {
 
 
 def set_path():
-    global home_path, rram_config_path, maestro_run_path, hw_config_path, model_path
+    global home_path, hw_config_path
     home_path = os.path.dirname(__file__)
-    rram_config_path = os.path.abspath(os.path.join(home_path, "rram_config.ini"))
-    maestro_run_path = os.path.abspath(os.path.join(home_path, "maestro_run.sh"))
     hw_config_path = os.path.abspath(os.path.join(home_path, "hw_config.m"))
     model_path = os.path.abspath(os.path.join(home_path, "model"))
     MNSIM_path = os.path.abspath(os.path.join(home_path, "MNSIM"))
     maestro_path = os.path.abspath(os.path.join(home_path, "maestro"))
+    model_csv_path = os.path.join(model_path, args.model + '/' + args.model + '.csv')
+    dla_model_csv_path = os.path.join(model_path, args.model + '/' + args.model + '-dla.csv')
+    rram_model_csv_path = os.path.join(model_path, args.model + '/' + args.model + '-rram.csv')
+    SP.run("cp {} {}".format(model_csv_path, dla_model_csv_path))
+    SP.run("cp {} {}".format(model_csv_path, rram_model_csv_path))
     sys.path.append(home_path)
     sys.path.append(MNSIM_path)
     sys.path.append(maestro_path)
@@ -66,14 +69,12 @@ if __name__ == "__main__":
     set_path()
     args = set_parser().parse_args()
     hw_param_dicts = hw_init(hw_config_path)
-    model_csv_path = os.path.join(model_path, args.model + '.csv')
-    model = pd.read_csv(model_csv_path).to_numpy()
-    model_layer_num = model.shape[0]
+    dla = mora.HW.DLA(hw_param_dicts, args.dataflow, home_path)
+    rram = mora.HW.RRAM(hw_param_dicts, home_path)
+    dla.invoke_maestro(args.model)
+    rram.invoke_MNSIM(args.model)
+    edp_cons = mora.api.EDP(dla, rram, args.model, home_path)
+    area_cons = mora.api.area(dla, rram, args.model, home_path)
 
-    dla = mora.HW.DLA(hw_param_dicts, args.dataflow, maestro_run_path)
-    rram = mora.HW.RRAM(hw_param_dicts, rram_config_path)
-    edp_cons = mora.api.EDP(dla, rram, model, maestro_run_path)
-    area_cons = mora.api.area(dla, rram, model, maestro_run_path)
-
-    mora.schedule.greedy_schedule(DLA=dla, RRAM=rram, model=model, EDP_cons=edp_cons, area_cons=area_cons)
+    mora.schedule.greedy_schedule(DLA=dla, RRAM=rram, model=args.model, EDP_cons=edp_cons, area_cons=area_cons)
     # TODO:  mora.schedule.mora_schedule(DLA=dla, RRAM=rram, model=model, EDP_cons=edp_cons, area_cons=area_cons)

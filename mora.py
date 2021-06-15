@@ -2,7 +2,6 @@
 Mora dse
 a greedy and singel model version
 '''
-
 import copy
 import os
 import sys

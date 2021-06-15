@@ -28,8 +28,15 @@ class DLA(object):
         dla_dicts['dataflow'] = self.dataflow
         return dla_dicts
 
-    def invoke_maestro(self, model):
+    def gemmv1(model):
+        # generate maestro model using maestro api
+        return
 
+    def gemmv2(model):
+        # generate maestro model with original model csv
+        return
+
+    def invoke_maestro(self, model):
         return
 
 

@@ -47,7 +47,7 @@ def set_path():
 
 def set_parser():
     parser = argparse.ArgumentParser(description='mora dse parser')
-    parser.add_argument('--dataflow', type=str, default='kcp')
+    parser.add_argument('--dataflow', type=str, default='kcp_ws')
     parser.add_argument('--model', type=str, default='vgg16')
     return parser
 

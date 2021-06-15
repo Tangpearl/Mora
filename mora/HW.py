@@ -5,7 +5,7 @@ import numpy as np
 import pandas as pd
 import subprocess as SP
 import multiprocessing as MP
-import torch
+import tensorflow as tf
 import MNSIM
 
 
@@ -28,8 +28,14 @@ class DLA(object):
         dla_dicts['dataflow'] = self.dataflow
         return dla_dicts
 
-    def gemmv1(model):
-        # generate maestro model using maestro api
+    def gemmv1(self, model):
+        # generate maestro model using keras and maestro api
+        maestro_tool_path = os.path.abspath(os.path.join(self.home_path, 'maestro/tools/frontend'))
+        model_path = os.path.abspath(os.path.join(self.home_path, 'model/' + model))
+        model_csv_path = os.path.abspath(os.path.join(model_path, model + '-dla.csv'))
+        maestro_model_path = os.path.abspath(os.path.join(model_path, model + '-dla_model.m'))
+        maestro_mapping_path = os.path.abspath(os.path.join(model_path, model + '-dla_' + self.dataflow + '.m'))
+
         return
 
     def gemmv2(model):

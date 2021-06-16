@@ -179,7 +179,7 @@ def get_net(hardware_config=None, cate='vgg16', num_classes=10):
     # print(model_csv_path)
     model = pd.read_csv(model_csv_path).to_numpy()
     model_layer_num = model.shape[0]
-    # O	  I  F	K	S	T	R	A
+    # O	   I    F	K	S	T	R	A
     for line in range(model_layer_num):
         layer = model[line, ...]
         if layer[5] == 1:  # conv

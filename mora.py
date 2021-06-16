@@ -15,18 +15,6 @@ import torch
 import MNSIM
 import mora
 
-mora_layer_type_dicts = {0: "Linear", 1: "CONV", 2: "DWCONV", 3: "Residual", 4: "TRCONV", 5: "NGCONV"}  # DWCONV Residual is DSCONV on maestro
-mora_layer_param_dicts = {
-    'O': 'output_channel',
-    'I': 'input_channel',
-    'F': 'feature_size',
-    'K': 'kernel_size',
-    'S': 'stride',
-    'T': 'layer_type',
-    'R': 'relu_or_relu&pooling',
-    'A': 'appending index'
-}  # RP = 0:no relu, 1:relu, 2~:relu and pooling (kernel size), A = conv input index
-
 
 def set_path():
     global home_path, hw_config_path

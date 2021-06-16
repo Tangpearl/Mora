@@ -14,3 +14,7 @@ import mora
 
 def greedy_schedule(DLA, RRAM, model, EDP_cons, area_cons):
     return
+
+
+def dse_checkpoint():
+    return

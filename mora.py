@@ -58,6 +58,7 @@ if __name__ == "__main__":
     hw_param_dicts = hw_init(hw_config_path)
     dla = mora.HW.DLA(hw_param_dicts, args.dataflow, home_path)
     rram = mora.HW.RRAM(hw_param_dicts, home_path)
+    mora.api.gemmv1(home_path, args.model, args.dataflow)
     dla.invoke_maestro(args.model)
     rram.invoke_MNSIM(args.model)
     edp_cons = mora.api.EDP(dla, rram, args.model, home_path)

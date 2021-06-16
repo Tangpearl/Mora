@@ -6,6 +6,7 @@ import os
 import math
 import argparse
 import numpy as np
+import pandas as pd
 import torch
 import collections
 import configparser
@@ -62,7 +63,7 @@ def main():
     parser.add_argument("-DisPipe", "--disable_inner_pipeline", action='store_true', default=False, help="Disable inner layer pipeline in latency modeling, default: false")
     parser.add_argument("-D", "--device", default=1, help="Determine hardware device for simulation, default: CPU")
     parser.add_argument("-DisModOut", "--disable_module_output", action='store_true', default=False, help="Disable module simulation results output, default: false")
-    parser.add_argument("-DisLayOut", "--disable_layer_output", action='store_true', default=False, help="Disable layer-wise simulation results output, default: false")
+    parser.add_argument("-DisLayOut", "--disable_layer_output", action='store_true', default=True, help="Disable layer-wise simulation results output, default: false")
 
     # mora args
     parser.add_argument("-model", "--model", type=str, default='vgg16', help="NN model name, default: vgg16")
@@ -87,6 +88,7 @@ def main():
     else:
         print("Quantization range: dynamic range (depends on the data distribution)")
     '''
+    output_csv_dicts = {}
 
     __TestInterface = TrainTestInterface(network_module=args.model,
                                          dataset_module='MNSIM.Interface.cifar10',
@@ -96,6 +98,7 @@ def main():
                                          tile_size=args.tile_size)
     structure_file = __TestInterface.get_structure()
     TCG_mapping = TCG(structure_file, args.hardware_description)
+    output_csv_dicts['layers'] = len(__TestInterface.net.layer_list)
 
     if not (args.disable_hardware_modeling):
         __latency = Model_latency(NetStruct=structure_file, SimConfig_path=args.hardware_description, TCG_mapping=TCG_mapping, tile_noc_bw=args.tile_noc_bw)
@@ -104,17 +107,19 @@ def main():
         else:
             __latency.calculate_model_latency_nopipe()
         print("========================Latency Results=================================")
-        __latency.model_latency_output(not (args.disable_module_output), not (args.disable_layer_output))
+        output_csv_dicts['latancy'] = __latency.model_latency_output(not (args.disable_module_output), not (args.disable_layer_output))
 
         __area = Model_area(NetStruct=structure_file, SimConfig_path=args.hardware_description, TCG_mapping=TCG_mapping)
         print("========================Area Results=================================")
-        __area.model_area_output(not (args.disable_module_output), not (args.disable_layer_output))
+        output_csv_dicts['area'] = __area.model_area_output(not (args.disable_module_output), not (args.disable_layer_output))
+
         __power = Model_inference_power(NetStruct=structure_file, SimConfig_path=args.hardware_description, TCG_mapping=TCG_mapping)
         print("========================Power Results=================================")
-        __power.model_power_output(not (args.disable_module_output), not (args.disable_layer_output))
+        output_csv_dicts['power'] = __power.model_power_output(not (args.disable_module_output), not (args.disable_layer_output))
+
         __energy = Model_energy(NetStruct=structure_file, SimConfig_path=args.hardware_description, TCG_mapping=TCG_mapping, model_latency=__latency, model_power=__power)
         print("========================Energy Results=================================")
-        __energy.model_energy_output(not (args.disable_module_output), not (args.disable_layer_output))
+        output_csv_dicts['energy'] = __energy.model_energy_output(not (args.disable_module_output), not (args.disable_layer_output))
 
     if not (args.disable_accuracy_simulation):
         print("======================================")
@@ -127,6 +132,11 @@ def main():
         else:
             print("Original accuracy:", __TestInterface.origin_evaluate(method='FIX_TRAIN', adc_action='FIX'))
             print("PIM-based computing accuracy:", __TestInterface.set_net_bits_evaluate(weight_2, adc_action='FIX'))
+
+    # write mora csv
+    output_csv_path = os.path.abspath(os.path.join(home_path, 'output/' + args.model + '/' + args.model + '-rram.csv'))
+    csv = pd.DataFrame(output_csv_dicts)
+    csv.to_csv(output_csv_path)
 
 
 if __name__ == '__main__':

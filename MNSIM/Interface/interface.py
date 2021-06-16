@@ -88,9 +88,11 @@ class TrainTestInterface(object):
             self.hardware_config['quantize_bit'] = extra_define['adc_res']
             self.hardware_config['xbar_size'] = extra_define['xbar_size']
         self.net = import_module('MNSIM.Interface.network').get_net(self.hardware_config, cate=self.network_module, num_classes=num_classes)
+        '''
         if weights_file is not None:
             print(f'load weights from {weights_file}')
             self.net.load_change_weights(torch.load(weights_file, map_location=self.device))
+        '''
 
     def origin_evaluate(self, method='SINGLE_FIX_TEST', adc_action='SCALE'):
         if self.test_loader == None:

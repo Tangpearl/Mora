@@ -75,7 +75,7 @@ def gemmv1(home_path, model, dataflow):
             fo.write("Layer L{} {{\n".format(line))
             fo.write("Type {} {{\n".format(MLTRD[MLTD[layer[5]]]))
             fo.write("Stride {{ X: {}, Y: {} }}\n".format(layer[4], layer[4]))
-            fo.write("Dimensions {{ K: {0}, C: {1}, R: {2}, S: {3}, Y: {4}, X: {5}}}\n".format(*KCRSYX))
+            fo.write("Dimensions {{ K: {0[0]}, C: {0[1]}, R: {0[2]}, S: {0[3]}, Y: {0[4]}, X: {0[5]}}}\n".format(*KCRSYX))
             fo.write("}\n")
         fo.write("}")
     print("[mora][gemmv1] Done csv to maestro model.")

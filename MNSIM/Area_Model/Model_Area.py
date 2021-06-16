@@ -3,6 +3,7 @@
 import sys
 import os
 import configparser as cp
+
 work_path = os.path.dirname(os.getcwd())
 sys.path.append(work_path)
 import numpy as np
@@ -12,6 +13,8 @@ import pandas as pd
 from MNSIM.Hardware_Model.Tile import tile
 from MNSIM.Hardware_Model.Buffer import buffer
 from MNSIM.Hardware_Model.Adder import adder
+
+
 class Model_area():
     def __init__(self, NetStruct, SimConfig_path, multiple=None, TCG_mapping=None):
         self.NetStruct = NetStruct
@@ -22,7 +25,7 @@ class Model_area():
         if multiple is None:
             multiple = [1] * len(self.NetStruct)
         if TCG_mapping is None:
-            TCG_mapping = TCG(NetStruct,SimConfig_path,multiple)
+            TCG_mapping = TCG(NetStruct, SimConfig_path, multiple)
         self.graph = TCG_mapping
         self.total_layer_num = self.graph.layer_num
         self.arch_area = self.total_layer_num * [0]
@@ -62,14 +65,12 @@ class Model_area():
         #     self.arch_Noc_area = 0
         self.calculate_model_area()
 
-    def calculate_model_area(self): #Todo: Noc area
+    def calculate_model_area(self):  #Todo: Noc area
 
-        self.graph.tile.calculate_tile_area(SimConfig_path=self.SimConfig_path,
-                                            default_inbuf_size = self.graph.max_inbuf_size,
-                                            default_outbuf_size = self.graph.max_outbuf_size)
-        self.global_buf = buffer(SimConfig_path=self.SimConfig_path,buf_level=1,default_buf_size=self.graph.global_buf_size)
+        self.graph.tile.calculate_tile_area(SimConfig_path=self.SimConfig_path, default_inbuf_size=self.graph.max_inbuf_size, default_outbuf_size=self.graph.max_outbuf_size)
+        self.global_buf = buffer(SimConfig_path=self.SimConfig_path, buf_level=1, default_buf_size=self.graph.global_buf_size)
         self.global_buf.calculate_buf_area()
-        self.global_add = adder(SimConfig_path=self.SimConfig_path,bitwidth=self.graph.global_adder_bitwidth)
+        self.global_add = adder(SimConfig_path=self.SimConfig_path, bitwidth=self.graph.global_adder_bitwidth)
         self.global_add.calculate_adder_area()
         for i in range(self.total_layer_num):
             tile_num = self.graph.layer_tileinfo[i]['tilenum']
@@ -91,18 +92,18 @@ class Model_area():
         self.arch_total_xbar_area = sum(self.arch_xbar_area)
         self.arch_total_ADC_area = sum(self.arch_ADC_area)
         self.arch_total_DAC_area = sum(self.arch_DAC_area)
-        self.arch_total_digital_area = sum(self.arch_digital_area)+self.global_add.adder_area*self.graph.global_adder_num
-        self.arch_total_adder_area = sum(self.arch_adder_area)+self.global_add.adder_area*self.graph.global_adder_num
+        self.arch_total_digital_area = sum(self.arch_digital_area) + self.global_add.adder_area * self.graph.global_adder_num
+        self.arch_total_adder_area = sum(self.arch_adder_area) + self.global_add.adder_area * self.graph.global_adder_num
         self.arch_total_shiftreg_area = sum(self.arch_shiftreg_area)
         self.arch_total_iReg_area = sum(self.arch_iReg_area)
         self.arch_total_oReg_area = sum(self.arch_oReg_area)
         self.arch_total_input_demux_area = sum(self.arch_input_demux_area)
         self.arch_total_output_mux_area = sum(self.arch_output_mux_area)
         self.arch_total_jointmodule_area = sum(self.arch_jointmodule_area)
-        self.arch_total_buf_area = sum(self.arch_buf_area)+self.global_buf.buf_area
+        self.arch_total_buf_area = sum(self.arch_buf_area) + self.global_buf.buf_area
         self.arch_total_pooling_area = sum(self.arch_pooling_area)
 
-    def model_area_output(self, module_information = 1, layer_information = 1):
+    def model_area_output(self, module_information=1, layer_information=1):
         print("Hardware area:", self.arch_total_area, "um^2")
         if module_information:
             print("		crossbar area:", self.arch_total_xbar_area, "um^2")
@@ -124,18 +125,18 @@ class Model_area():
                 print("Layer", i, ":")
                 layer_dict = self.NetStruct[i][0][0]
                 if layer_dict['type'] == 'element_sum':
-                    print("     Hardware area (global accumulator):", self.global_add.adder_area*self.graph.global_adder_num+self.global_buf.buf_area, "um^2")
+                    print("     Hardware area (global accumulator):", self.global_add.adder_area * self.graph.global_adder_num + self.global_buf.buf_area, "um^2")
                 else:
                     print("     Hardware area:", self.arch_area[i], "um^2")
+        return self.arch_total_area
+
 
 if __name__ == '__main__':
     test_SimConfig_path = os.path.join(os.path.dirname(os.path.dirname(os.getcwd())), "SimConfig.ini")
-    test_weights_file_path = os.path.join(os.path.dirname(os.path.dirname(os.getcwd())),
-                                          "vgg8_params.pth")
+    test_weights_file_path = os.path.join(os.path.dirname(os.path.dirname(os.getcwd())), "vgg8_params.pth")
 
-    __TestInterface = TrainTestInterface('vgg8_128_9', 'MNSIM.Interface.cifar10', test_SimConfig_path,
-                                         test_weights_file_path)
+    __TestInterface = TrainTestInterface('vgg8_128_9', 'MNSIM.Interface.cifar10', test_SimConfig_path, test_weights_file_path)
     structure_file = __TestInterface.get_structure()
     __TCG_mapping = TCG(structure_file, test_SimConfig_path)
-    __area = Model_area(NetStruct=structure_file,SimConfig_path=test_SimConfig_path,TCG_mapping=__TCG_mapping)
-    __area.model_area_output(1,1)
+    __area = Model_area(NetStruct=structure_file, SimConfig_path=test_SimConfig_path, TCG_mapping=__TCG_mapping)
+    __area.model_area_output(1, 1)

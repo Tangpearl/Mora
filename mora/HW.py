@@ -32,7 +32,8 @@ class DLA(object):
         mapping_path = os.path.abspath(os.path.join(self.home_path, 'model/' + model + '/' + model + '-dla_' + self.dataflow + '.m'))
         params = [self.dla_dicts['pes'], self.dla_dicts['glb_size'], self.dla_dicts['noc_bw'], mapping_path]
         # command = "./maestro --HW_file='{}' --Mapping_file='{}' --print_res=true --print_res_csv_file=true --print_log_file=false".format()
-        command = "../maestro/maestro --num_pes={} --l2_size_cstr={} --noc_bw_cstr={} --Mapping_file='{}' --print_res=true --print_res_csv_file=true --print_log_file=false".format(*params)
+        command = "../maestro/maestro --num_pes={0[0]} --l2_size_cstr={0[1]} --noc_bw_cstr={0[2]} --Mapping_file='{0[3]}' --print_res=true --print_res_csv_file=true --print_log_file=false".format(
+            *params)
         if os.path.exists(output_csv_path):
             print("dla outfile conflict.")
             raise AttributeError

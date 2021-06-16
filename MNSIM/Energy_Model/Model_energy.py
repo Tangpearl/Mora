@@ -3,6 +3,7 @@
 import sys
 import os
 import configparser as cp
+
 work_path = os.path.dirname(os.getcwd())
 sys.path.append(work_path)
 import numpy as np
@@ -15,9 +16,9 @@ from MNSIM.Latency_Model.Model_latency import Model_latency
 from MNSIM.Hardware_Model.Buffer import buffer
 from MNSIM.Hardware_Model.Adder import adder
 
+
 class Model_energy():
-    def __init__(self,NetStruct,SimConfig_path,model_power=None,
-                 model_latency=None,multiple=None,TCG_mapping=None):
+    def __init__(self, NetStruct, SimConfig_path, model_power=None, model_latency=None, multiple=None, TCG_mapping=None):
         self.NetStruct = NetStruct
         self.SimConfig_path = SimConfig_path
         modelL_config = cp.ConfigParser()
@@ -30,12 +31,12 @@ class Model_energy():
         self.graph = TCG_mapping
         self.total_layer_num = self.graph.layer_num
         if model_latency is None:
-            self.model_latency = Model_latency(NetStruct,SimConfig_path,multiple,TCG_mapping)
+            self.model_latency = Model_latency(NetStruct, SimConfig_path, multiple, TCG_mapping)
             self.model_latency.calculate_model_latency(mode=2)
         else:
             self.model_latency = model_latency
         if model_power is None:
-            self.model_power = Model_inference_power(NetStruct,SimConfig_path,multiple,TCG_mapping)
+            self.model_power = Model_inference_power(NetStruct, SimConfig_path, multiple, TCG_mapping)
         else:
             self.model_power = model_power
         self.arch_energy = self.total_layer_num * [0]
@@ -81,28 +82,27 @@ class Model_energy():
 
     def calculate_model_energy(self):
         #print(self.model_latency.total_buffer_r_latency)
-        self.global_buf = buffer(SimConfig_path=self.SimConfig_path,buf_level=1,
-                                 default_buf_size=self.graph.global_buf_size)
+        self.global_buf = buffer(SimConfig_path=self.SimConfig_path, buf_level=1, default_buf_size=self.graph.global_buf_size)
         self.global_buf.calculate_buf_read_power()
         self.global_buf.calculate_buf_write_power()
         self.global_add = adder(SimConfig_path=self.SimConfig_path, bitwidth=self.graph.global_adder_bitwidth)
         self.global_add.calculate_adder_power()
         for i in range(self.total_layer_num):
             tile_num = self.graph.layer_tileinfo[i]['tilenum']
-            self.arch_xbar_energy[i] = self.model_power.arch_xbar_power[i]*self.model_latency.total_xbar_latency[i]
-            self.arch_ADC_energy[i] = self.model_power.arch_ADC_power[i]*self.model_latency.total_ADC_latency[i]
-            self.arch_DAC_energy[i] = self.model_power.arch_DAC_power[i]*self.model_latency.total_DAC_latency[i]
-            self.arch_adder_energy[i] = self.model_power.arch_adder_power[i]*self.model_latency.total_adder_latency[i]
-            self.arch_shiftreg_energy[i] = self.model_power.arch_shiftreg_power[i]*self.model_latency.total_shiftreg_latency[i]
-            self.arch_iReg_energy[i] = self.model_power.arch_iReg_power[i]*self.model_latency.total_iReg_latency[i]
-            self.arch_oReg_energy[i] = self.model_power.arch_oReg_power[i]*self.model_latency.total_oReg_latency[i]
-            self.arch_input_demux_energy[i] = self.model_power.arch_input_demux_power[i]*self.model_latency.total_input_demux_latency[i]
-            self.arch_output_mux_energy[i] = self.model_power.arch_output_mux_power[i]*self.model_latency.total_output_mux_latency[i]
-            self.arch_jointmodule_energy[i] = self.model_power.arch_jointmodule_power[i]*self.model_latency.total_jointmodule_latency[i]
-            self.arch_buf_r_energy[i] = self.model_power.arch_buf_r_power[i]*self.model_latency.total_buffer_r_latency[i]
-            self.arch_buf_w_energy[i] = self.model_power.arch_buf_w_power[i]*self.model_latency.total_buffer_w_latency[i]
+            self.arch_xbar_energy[i] = self.model_power.arch_xbar_power[i] * self.model_latency.total_xbar_latency[i]
+            self.arch_ADC_energy[i] = self.model_power.arch_ADC_power[i] * self.model_latency.total_ADC_latency[i]
+            self.arch_DAC_energy[i] = self.model_power.arch_DAC_power[i] * self.model_latency.total_DAC_latency[i]
+            self.arch_adder_energy[i] = self.model_power.arch_adder_power[i] * self.model_latency.total_adder_latency[i]
+            self.arch_shiftreg_energy[i] = self.model_power.arch_shiftreg_power[i] * self.model_latency.total_shiftreg_latency[i]
+            self.arch_iReg_energy[i] = self.model_power.arch_iReg_power[i] * self.model_latency.total_iReg_latency[i]
+            self.arch_oReg_energy[i] = self.model_power.arch_oReg_power[i] * self.model_latency.total_oReg_latency[i]
+            self.arch_input_demux_energy[i] = self.model_power.arch_input_demux_power[i] * self.model_latency.total_input_demux_latency[i]
+            self.arch_output_mux_energy[i] = self.model_power.arch_output_mux_power[i] * self.model_latency.total_output_mux_latency[i]
+            self.arch_jointmodule_energy[i] = self.model_power.arch_jointmodule_power[i] * self.model_latency.total_jointmodule_latency[i]
+            self.arch_buf_r_energy[i] = self.model_power.arch_buf_r_power[i] * self.model_latency.total_buffer_r_latency[i]
+            self.arch_buf_w_energy[i] = self.model_power.arch_buf_w_power[i] * self.model_latency.total_buffer_w_latency[i]
             self.arch_buf_energy[i] = self.arch_buf_r_energy[i] + self.arch_buf_w_energy[i]
-            self.arch_pooling_energy[i] = self.model_power.arch_pooling_power[i]*self.model_latency.total_pooling_latency[i]
+            self.arch_pooling_energy[i] = self.model_power.arch_pooling_power[i] * self.model_latency.total_pooling_latency[i]
             self.arch_digital_energy[i] = self.arch_shiftreg_energy[i]+self.arch_iReg_energy[i]+self.arch_oReg_energy[i]+\
                                           self.arch_input_demux_energy[i]+self.arch_output_mux_energy[i]+self.arch_jointmodule_energy[i]
             self.arch_energy[i] = self.arch_xbar_energy[i]+self.arch_ADC_energy[i]+self.arch_DAC_energy[i]+\
@@ -122,11 +122,11 @@ class Model_energy():
         self.arch_total_jointmodule_energy = sum(self.arch_jointmodule_energy)
         self.arch_total_buf_energy = sum(self.arch_buf_energy) + self.global_buf.buf_rpower*1e-3*self.global_buf.buf_rlatency \
                                      + self.global_buf.buf_wpower*1e-3*self.global_buf.buf_wlatency
-        self.arch_total_buf_r_energy = sum(self.arch_buf_r_energy) + self.global_buf.buf_rpower*1e-3*self.global_buf.buf_rlatency
-        self.arch_total_buf_w_energy = sum(self.arch_buf_w_energy) + self.global_buf.buf_wpower*1e-3*self.global_buf.buf_wlatency
+        self.arch_total_buf_r_energy = sum(self.arch_buf_r_energy) + self.global_buf.buf_rpower * 1e-3 * self.global_buf.buf_rlatency
+        self.arch_total_buf_w_energy = sum(self.arch_buf_w_energy) + self.global_buf.buf_wpower * 1e-3 * self.global_buf.buf_wlatency
         self.arch_total_pooling_energy = sum(self.arch_pooling_energy)
 
-    def model_energy_output(self, module_information = 1, layer_information = 1):
+    def model_energy_output(self, module_information=1, layer_information=1):
         print("Hardware energy:", self.arch_total_energy, "nJ")
         if module_information:
             print("		crossbar energy:", self.arch_total_xbar_energy, "nJ")
@@ -148,15 +148,15 @@ class Model_energy():
             for i in range(self.total_layer_num):
                 print("Layer", i, ":")
                 print("     Hardware energy:", self.arch_energy[i], "nJ")
+        return self.arch_total_energy
+
 
 if __name__ == '__main__':
     test_SimConfig_path = os.path.join(os.path.dirname(os.path.dirname(os.getcwd())), "SimConfig.ini")
-    test_weights_file_path = os.path.join(os.path.dirname(os.path.dirname(os.getcwd())),
-                                          "vgg8_params.pth")
+    test_weights_file_path = os.path.join(os.path.dirname(os.path.dirname(os.getcwd())), "vgg8_params.pth")
 
-    __TestInterface = TrainTestInterface('vgg8_128_9', 'MNSIM.Interface.cifar10', test_SimConfig_path,
-                                         test_weights_file_path)
+    __TestInterface = TrainTestInterface('vgg8_128_9', 'MNSIM.Interface.cifar10', test_SimConfig_path, test_weights_file_path)
     structure_file = __TestInterface.get_structure()
     __TCG_mapping = TCG(structure_file, test_SimConfig_path)
-    __energy = Model_energy(NetStruct=structure_file,SimConfig_path=test_SimConfig_path,TCG_mapping=__TCG_mapping)
-    __energy.model_energy_output(1,1)
+    __energy = Model_energy(NetStruct=structure_file, SimConfig_path=test_SimConfig_path, TCG_mapping=__TCG_mapping)
+    __energy.model_energy_output(1, 1)

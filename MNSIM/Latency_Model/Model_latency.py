@@ -776,7 +776,9 @@ class Model_latency():
                     print("     Inter tile transfer latency of layer", i, ":", self.total_tile_transfer_latency[i], '(', "%.2f" % (100 * self.total_tile_transfer_latency[i] / total_latency), '%)')
                 print('----------------------------------------------')
         # print("Latency simulation finished!")
-        print("Entire latency:", max(max(self.finish_time)), "ns")
+        latancy = max(max(self.finish_time))
+        print("Entire latency:", latancy, "ns")
+        return latancy
 
     def layer_latency_initial(self):
         self.begin_time.append([])
